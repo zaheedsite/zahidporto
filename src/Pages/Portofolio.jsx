@@ -118,6 +118,17 @@ const techStacks = [
   { icon: "SweetAlert.svg", language: "SweetAlert2" },
 ];
 
+const normalizeProject = (project) => ({
+  ...project,
+  title: project.title ?? project.Title ?? "",
+  description: project.description ?? project.Description ?? "",
+  img: project.img ?? project.Img ?? "",
+  link: project.link ?? project.Link ?? "",
+  github: project.github ?? project.Github ?? "",
+  features: project.features ?? project.Features ?? [],
+  tech_stack: project.tech_stack ?? project.TechStack ?? [],
+});
+
 export default function FullWidthTabs() {
   const theme = useTheme();
   const [value, setValue] = useState(0);
@@ -148,7 +159,7 @@ export default function FullWidthTabs() {
       if (certificatesResponse.error) throw certificatesResponse.error;
 
       // Supabase mengembalikan data dalam properti 'data'
-      const projectData = projectsResponse.data || [];
+      const projectData = (projectsResponse.data || []).map(normalizeProject);
       const certificateData = certificatesResponse.data || [];
 
       setProjects(projectData);
@@ -170,7 +181,7 @@ export default function FullWidthTabs() {
     const cachedCertificates = localStorage.getItem('certificates');
 
     if (cachedProjects && cachedCertificates) {
-        setProjects(JSON.parse(cachedProjects));
+        setProjects(JSON.parse(cachedProjects).map(normalizeProject));
         setCertificates(JSON.parse(cachedCertificates));
     }
     
@@ -316,10 +327,10 @@ export default function FullWidthTabs() {
                     data-aos-duration={index % 3 === 0 ? "1000" : index % 3 === 1 ? "1200" : "1000"}
                   >
                     <CardProject
-                      Img={project.Img}
-                      Title={project.Title}
-                      Description={project.Description}
-                      Link={project.Link}
+                      img={project.img}
+                      title={project.title}
+                      description={project.description}
+                      link={project.link}
                       id={project.id}
                     />
                   </div>

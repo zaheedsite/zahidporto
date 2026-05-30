@@ -3,17 +3,13 @@ import { Helmet } from "react-helmet-async"
 import { Github, Linkedin, Mail, ExternalLink, Instagram, Sparkles } from "lucide-react"
 import AOS from 'aos'
 import 'aos/dist/aos.css'
+import { supabase } from "../supabase"
 
 const StatusBadge = memo(() => (
   <div className="inline-block animate-float lg:mx-0" data-aos="zoom-in" data-aos-delay="400">
     <div className="relative group">
       <div className="absolute -inset-0.5 bg-gradient-to-r from-[#6366f1] to-[#a855f7] rounded-full blur opacity-30 group-hover:opacity-50 transition duration-1000"></div>
-      <div className="relative px-3 sm:px-4 py-2 rounded-full bg-black/40 backdrop-blur-xl border border-white/10">
-        <span className="bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-transparent bg-clip-text sm:text-sm text-[0.7rem] font-medium flex items-center">
-          <Sparkles className="sm:w-4 sm:h-4 w-3 h-3 mr-2 text-blue-400" />
-          Ready to Innovate
-        </span>
-      </div>
+     
     </div>
   </div>
 ));
@@ -24,14 +20,14 @@ const MainTitle = memo(() => (
       <span className="relative inline-block">
         <span className="absolute -inset-2 bg-gradient-to-r from-[#6366f1] to-[#a855f7] blur-2xl opacity-20"></span>
         <span className="relative bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent">
-          Frontend
+          Business Development &
         </span>
       </span>
       <br />
       <span className="relative inline-block mt-2">
         <span className="absolute -inset-2 bg-gradient-to-r from-[#6366f1] to-[#a855f7] blur-2xl opacity-20"></span>
         <span className="relative bg-gradient-to-r from-[#6366f1] to-[#a855f7] bg-clip-text text-transparent">
-          Developer
+          Digital Marketing
         </span>
       </span>
     </h1>
@@ -77,7 +73,7 @@ const TYPING_SPEED = 100;
 const ERASING_SPEED = 50;
 const PAUSE_DURATION = 2000;
 const WORDS = ["Network & Telecom Student", "Tech Enthusiast"];
-const TECH_STACK = ["React", "Javascript", "Node.js", "Tailwind"];
+const TECH_STACK = ["Fullstack Developer", "Digital Marketer",];
 const SOCIAL_LINKS = [
   { icon: Github, link: "https://github.com/EkiZR", label: "GitHub Profile" },
   { icon: Linkedin, link: "https://www.linkedin.com/in/ekizr/", label: "LinkedIn Profile" },
@@ -91,6 +87,7 @@ const Home = () => {
   const [charIndex, setCharIndex] = useState(0)
   const [isLoaded, setIsLoaded] = useState(false)
   const [isHovering, setIsHovering] = useState(false)
+  const [liveCounts, setLiveCounts] = useState({ projects: null, certificates: null })
 
   useEffect(() => {
     const initAOS = () => {
@@ -109,6 +106,35 @@ const Home = () => {
     setIsLoaded(true);
     return () => setIsLoaded(false);
   }, []);
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadLiveCounts = async () => {
+      const [projectsResponse, certificatesResponse] = await Promise.all([
+        supabase.from("projects").select("id", { count: "exact", head: true }),
+        supabase.from("certificates").select("id", { count: "exact", head: true }),
+      ])
+
+      if (!isMounted) return
+
+      if (projectsResponse.error || certificatesResponse.error) {
+        console.error("Error loading live portfolio counts:", projectsResponse.error || certificatesResponse.error)
+        return
+      }
+
+      setLiveCounts({
+        projects: projectsResponse.count ?? 0,
+        certificates: certificatesResponse.count ?? 0,
+      })
+    }
+
+    loadLiveCounts()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   const handleTyping = useCallback(() => {
     if (isTyping) {
@@ -164,10 +190,10 @@ const Home = () => {
         `}</script>
       </Helmet>
 
-      <div className="min-h-screen bg-[#030014] overflow-hidden px-[5%] sm:px-[5%] lg:px-[10%]" id="Home">
+      <div className="min-h-screen bg-[#030014] overflow-hidden px-[5%] sm:px-[5%] lg:px-[10%] py-6 sm:py-0" id="Home">
         <div className={`relative z-10 transition-all duration-1000 ${isLoaded ? "opacity-100" : "opacity-0"}`}>
           <div className="container mx-auto min-h-screen">
-            <div className="flex flex-col lg:flex-row items-center justify-center h-screen md:justify-between gap-0 sm:gap-12 lg:gap-20">
+            <div className="flex min-h-screen flex-col lg:flex-row items-center justify-center md:justify-between gap-0 sm:gap-12 lg:gap-20 py-6 sm:py-0">
               {/* Left Column */}
               <div className="w-full lg:w-1/2 space-y-6 sm:space-y-8 text-left lg:text-left order-1 lg:order-1 lg:mt-0"
                 data-aos="fade-right"
@@ -188,7 +214,7 @@ const Home = () => {
                   <p className="text-base md:text-lg text-gray-400 max-w-xl leading-relaxed font-light"
                     data-aos="fade-up"
                     data-aos-delay="1000">
-                    Menciptakan Website Yang Inovatif, Fungsional, dan User-Friendly untuk Solusi Digital.
+                    Membantu bisnis berkembang melalui website, aplikasi mobile, konten kreatif, dan strategi digital marketing yang menghasilkan pelanggan serta penjualan
                   </p>
 
                   {/* Tech Stack */}
@@ -204,6 +230,12 @@ const Home = () => {
                     <CTAButton href="#Contact" text="Contact" icon={Mail} />
                   </div>
 
+                  {(liveCounts.projects !== null || liveCounts.certificates !== null) && (
+                    <p className="text-xs sm:text-sm text-gray-500" data-aos="fade-up" data-aos-delay="1500">
+                      Live from Supabase: {liveCounts.projects ?? 0} projects · {liveCounts.certificates ?? 0} certificates
+                    </p>
+                  )}
+
                   {/* Social Links */}
                   <div className="hidden sm:flex gap-4 justify-start" data-aos="fade-up" data-aos-delay="1600">
                     {SOCIAL_LINKS.map((social, index) => (
@@ -213,28 +245,28 @@ const Home = () => {
                 </div>
               </div>
 
-              {/* Right Column - WebM Video */}
-              <div className="w-full py-0 md:py-[10%] sm:py-0 lg:w-1/2 h-[260px] sm:h-[400px] lg:h-[600px] xl:h-[750px] relative flex items-center justify-center order-2 lg:order-2  mt-5 sm:mt-0"
+              {/* Right Column - Profile Image */}
+              <div className="w-full py-0 sm:py-2 md:py-[6%] lg:py-[10%] lg:w-1/2 min-h-[220px] sm:min-h-[440px] lg:min-h-[600px] xl:min-h-[750px] relative flex items-center justify-center order-2 lg:order-2 mt-2 sm:mt-0 mb-2 sm:mb-0"
                 onMouseEnter={() => setIsHovering(true)}
                 onMouseLeave={() => setIsHovering(false)}
                 data-aos="fade-left"
                 data-aos-delay="600">
-                <div className="relative w-full opacity-90">
+                <div className="relative w-full max-w-[320px] sm:max-w-[380px] lg:max-w-[440px] aspect-[4/5] opacity-90">
                   <div className={`absolute inset-0 bg-gradient-to-r from-[#6366f1]/10 to-[#a855f7]/10 rounded-3xl blur-3xl transition-all duration-700 ease-in-out ${
                     isHovering ? "opacity-50 scale-105" : "opacity-20 scale-100"
                   }`}>
                   </div>
 
-                  <div className={`relative lg:left-12 z-10 w-full opacity-90 transform transition-transform duration-500 ${
+                  <div className={`relative z-10 w-full h-full overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-2xl shadow-indigo-500/10 opacity-90 transform transition-transform duration-500 ${
                     isHovering ? "scale-105" : "scale-100"
                   }`}>
                     <img
-                      src="Animation1.gif"
-                      alt="Developer Animation"
-                      className={`w-full h-full object-contain transition-all duration-500 ${
+                      src="/photo.png"
+                      alt="Profile photo"
+                      className={`w-full h-full object-cover object-top transition-all duration-500 ${
                         isHovering 
-                          ? "scale-[95%] sm:scale-[90%] md:scale-[90%] lg:scale-[90%] rotate-2" 
-                          : "scale-[90%] sm:scale-[80%] md:scale-[80%] lg:scale-[80%]"
+                          ? "scale-[1.03] rotate-1" 
+                          : "scale-[1.01]"
                       }`}
                     />
                   </div>
@@ -242,7 +274,7 @@ const Home = () => {
                   <div className={`absolute inset-0 pointer-events-none transition-all duration-700 ${
                     isHovering ? "opacity-50" : "opacity-20"
                   }`}>
-                    <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-gradient-to-br from-indigo-500/10 to-purple-500/10 blur-3xl animate-[pulse_6s_cubic-bezier(0.4,0,0.6,1)_infinite] transition-all duration-700 ${
+                    <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(92vw,24rem)] h-[min(92vw,24rem)] bg-gradient-to-br from-indigo-500/10 to-purple-500/10 blur-3xl animate-[pulse_6s_cubic-bezier(0.4,0,0.6,1)_infinite] transition-all duration-700 ${
                       isHovering ? "scale-110" : "scale-100"
                     }`}>
                     </div>
